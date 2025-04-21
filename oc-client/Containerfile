@@ -1,0 +1,29 @@
+FROM registry.fedoraproject.org/fedora:latest
+
+RUN useradd notroot
+
+RUN dnf -y update \
+&& dnf -y install bash-completion diffutils bzip2 openscap-scanner openscap git vim-enhanced pip jq unzip ansible procps-ng tree s3cmd openssl wget helm httpd-tools openldap-clients ca-certificates \
+&& echo "set t_TI= t_TE=" >> /etc/vimrc \
+&& echo "set cursorcolumn" >> /etc/vimrc \
+&& curl "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz" -O \
+&& tar -xzvf openshift-client-linux.tar.gz -C /usr/local/bin/ \
+&& oc completion bash >> /etc/bash_completion.d/oc_bash_completion \
+&& kubectl completion bash >> /etc/bash_completion.d/kubectl_bash_completion \
+&& rm -f README.md openshift-client-linux.tar.gz \
+&& curl "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-install-linux.tar.gz" -O \
+&& tar -xzvf openshift-install-linux.tar.gz -C /usr/local/bin/ \
+&& openshift-install completion bash >> /etc/bash_completion.d/openshift-install_bash_completion \
+&& rm -f /usr/local/bin/README.md openshift-install-linux.tar.gz \
+&& pip install kubernetes \
+&& dnf clean all \
+&& rm -rf /var/cache/yum \
+&& history -c
+
+USER notroot
+WORKDIR /home/notroot
+
+CMD [ "/bin/bash" ]
+
+## podman rmi oc-client
+## podman build --force-rm --squash-all -t oc-client .
